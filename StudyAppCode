@@ -1,0 +1,67 @@
+from tkinter import *
+import tkinter as tk
+import pygame
+import datetime
+import pandas as pd
+
+uhrzeiten = []
+events = []
+
+root = Tk()
+root.title("Nates Study App")
+
+pygame.mixer.init() #das wird verwendet, um die Audiodateien abzuspielen
+
+def play():
+    pygame.mixer.music.load("RegenPomodoro.mp3")
+    pygame.mixer.music.play(loops=0)
+    time = str(datetime.datetime.now())[11:19]
+    date = str(datetime.datetime.now())[:10]
+    start_label["text"] = "Pomodoro gestartet am", date, "um", time #dieses start_label["text"] bedeutet: in dem Objekt(?) start_label, verändere die Variable "text"
+    uhrzeiten.append(time)    
+    events.append ("gestartet")
+
+def pause():
+    pygame.mixer.music.pause()
+    time = str(datetime.datetime.now())[11:19]
+    pause_label["text"] = "Pomodoro pausiert um", time
+    uhrzeiten.append(time)    
+    events.append ("pausiert")
+    
+def unpause():    
+    pygame.mixer.music.unpause()
+    time = str(datetime.datetime.now())[11:19]
+    pause_label["text"] = "Pomodoro fortgesetzt um", time
+    uhrzeiten.append(time)    
+    events.append ("fortgesetzt")
+    
+def export():
+    filename = (str(datetime.datetime.now())[:10]) + ".xlsx"
+    pd.DataFrame(events, index=uhrzeiten).to_excel(filename)    
+
+lower_frame = tk.Frame(root, bg='#9B2915', bd=10)
+lower_frame.pack(side="bottom")
+
+#buttons
+pause_button = Button(lower_frame, text="Pause", font=("Helvetica", 10), command=pause)
+pause_button.pack(side="right")
+
+play_button = Button(lower_frame, text="Start Pomodoro Unit", font=("Helvetica", 15), command=play)
+play_button.pack(side="left")
+
+unpause_button = Button(lower_frame, text="Resume", font=("Helvetica", 10), command=unpause)
+unpause_button.pack(side="right")
+
+export_button = Button(lower_frame, text="export", font=("Helvetica", 10), command=export)
+export_button.pack(side="right")
+#/buttons
+
+#labels und Feedback
+start_label = tk.Label(lower_frame, text = "hier steht wann deine Einheit losgeht", bg="white",)
+start_label.pack(side="bottom")
+
+pause_label = tk.Label(lower_frame, text = "hier steht wenn du deine Einheit pausiert hast", bg="white")
+pause_label.pack(side="bottom",)
+
+
+root.mainloop()
