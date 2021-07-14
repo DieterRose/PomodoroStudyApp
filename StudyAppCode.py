@@ -4,68 +4,67 @@ import pygame
 import datetime
 import pandas as pd
 
-uhrzeiten = []
+event_time = []
 events = []
 task = []
 export_dict = dict() 
 
 volume= 0.5
 
-try: # versuche, eine Datei zu lesen, die heute schon erstellt wurde
+try: # try reading a .xlsx file that was created today 
     filename = (str(datetime.datetime.now())[:10]) + ".xlsx"
     df = pd.read_excel (filename)
-    events = df['event'].tolist() # lese die Spalte event, konvertiere zu Liste und überschreibe events
+    events = df['event'].tolist() # read the column event, convert to list and overwrite events
     task = df['task'].tolist()
-    uhrzeiten = df['Unnamed: 0'].tolist()
+    event_time = df['Unnamed: 0'].tolist() #I could not find a way to keep pandas form naming the first column Unnamed: 0
 except: print ("did not find file from today or could not read it")    
 
 root = Tk()
 root.title("Nates Study App")
 
-pygame.mixer.init() #das wird verwendet, um die Audiodateien abzuspielen
+pygame.mixer.init() #this is necessary to play the audio File
 
 def play():
-    pygame.mixer.music.load("RegenPomodoro.mp3")
+    pygame.mixer.music.load("RegenPomodoro.mp3") # Regen means rain in German
     pygame.mixer.music.play(loops=0)
     global volume
     pygame.mixer.music.set_volume(volume)
     time = str(datetime.datetime.now())[11:19]
     date = str(datetime.datetime.now())[:10]
-    start_label["text"] = "Pomodoro started on " +  date + " at " + time #dieses start_label["text"] bedeutet: in dem Objekt(?) start_label, verändere die Variable "text"
-    uhrzeiten.append(time)    
+    start_label["text"] = "Pomodoro started on " +  date + " at " + time
+    event_time.append(time)    
     events.append ("started")
-    task.append(entry.get()) #diese Zeile holt das, was der User in das Input-Feld getippt hat
+    task.append(entry.get()) #to get input from the user
     
 def pause():
     pygame.mixer.music.pause()
     time = str(datetime.datetime.now())[11:19]
     pause_label["text"] = "paused studying at " + time
-    uhrzeiten.append(time)    
+    event_time.append(time)    
     events.append ("paused")
-    task.append("") # um zu verhindern, dass die Listen task, uhrzeiten, events "desynchronisieren"
+    task.append("") # to keep event_time, events and task from "desynchronizing"
     
 def unpause():    
     pygame.mixer.music.unpause()
     time = str(datetime.datetime.now())[11:19]
     pause_label["text"] = "resumed studying at " + time
-    uhrzeiten.append(time)    
+    event_time.append(time)    
     events.append ("resumed")
     task.append("")
     
 def export():
     filename = (str(datetime.datetime.now())[:10]) + ".xlsx"
     x = 0
-    for uhrzeit in uhrzeiten : 
-        export_dict[uhrzeit] = events[x], task[x]
+    for sgl_time in event_time : 
+        export_dict[sgl_time] = events[x], task[x] #mabye there is a more elegant way to implement this
         x = x + 1
     pd.DataFrame.from_dict(export_dict, orient='index', columns = ['event', 'task']).to_excel(filename)    
     
-def export_tocsv(): #noch nicht fertig!
+def export_tocsv(): 
     filename = (str(datetime.datetime.now())[:10]) + ".csv"
-    #pd.DataFrame(events, task, index=uhrzeiten).to_csv(filename)
     x = 0
-    for uhrzeit in uhrzeiten : 
-        export_dict[uhrzeit] = events[x], task[x]
+    for sgl_time in event_time : 
+        export_dict[sgl_time] = events[x], task[x]
         x = x + 1
     pd.DataFrame.from_dict(export_dict, orient='index', columns = ['event', 'task']).to_csv(filename)
 
